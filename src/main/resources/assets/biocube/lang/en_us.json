@@ -1,0 +1,14 @@
+  
+{
+	"entity.biocube.HermitCrab": "HermitCrab",
+	
+	"item.biocube.goblinjaws_item": "GoblinJaws",
+	"item.biocube.miscellaneousmeat_item": "MiscellaneousMeat",
+	"item.biocube.hippotusk_item": "HippoTusk",
+	"item.biocube.obscurelens_item": "ObscureLens",
+	"item.biocube.lapiscarapace_item": "LapisCarapace",
+	"item.biocube.eel_item": "Eel",
+	"item.biocube.crocscute_item": "Crocscute",
+	"item.biocube.frozenflesh_item": "FrozenFlesh",
+	"item.biocube.spinespear_item": "SpineSpear"
+}

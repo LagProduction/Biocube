@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All rights reserved"
+[[mods]]
+modId="biocube"
+
+version="1.0"
+displayName="Biocube"
+logoFile="logo.png"
+credits="Alpha, Gec Master"
+authors="Alpha, Gec Master"
+description='''Biocube is a mob - focused mod that aims to enhance vanilla experience by adding in life forms both realistic and 
+fictional and expanding on the vanilla base structures and biomes
+'''
+[[dependencies.examplemod]] #optional
+    modId="forge"
+    mandatory=true 
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.examplemod]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
