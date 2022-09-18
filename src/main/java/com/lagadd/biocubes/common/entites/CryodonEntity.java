@@ -1,164 +1,308 @@
 package com.lagadd.biocubes.common.entites;
 
-	import java.util.Map;
-
 import com.lagadd.biocubes.common.entites.ai.MeleGoal;
-import com.mojang.math.Vector3f;
-
-import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
-	import software.bernie.geckolib3.core.PlayState;
-	import software.bernie.geckolib3.core.builder.AnimationBuilder;
-	import software.bernie.geckolib3.core.controller.AnimationController;
-	import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-	import software.bernie.geckolib3.core.manager.AnimationData;
-	import software.bernie.geckolib3.core.manager.AnimationFactory;
+import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
+import software.bernie.geckolib3.core.manager.AnimationData;
+import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-				public class CryodonEntity extends Animal implements IAnimatable  {
-					private static final EntityDataAccessor<Boolean> SITTING = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
-				    private static final EntityDataAccessor<Boolean> SNIFFING = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
-				    private AnimationFactory factory = new AnimationFactory(this);
+import java.util.EnumSet;
+import java.util.List;
 
-				    private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
-				        if (this.isSitting()) {
-				            event.getController().setAnimation(new AnimationBuilder().addAnimation("sit normal", true));
-				            return PlayState.CONTINUE;
-				        } else if (event.isMoving()) {
-				            event.getController().setAnimation(new AnimationBuilder().addAnimation("walk normal", true));
-				            return PlayState.CONTINUE;
-				        } else if (!this.isSniffing()) {
-				            event.getController().setAnimation(new AnimationBuilder().addAnimation("idle", true));
-				            return PlayState.CONTINUE;
-				        }
-				        event.getController().markNeedsReload();
-				        return PlayState.STOP;
-				    }
+public class CryodonEntity extends Animal implements IAnimatable {
+    //SLEEP STATE
+    private static final EntityDataAccessor<Boolean> sleep_state = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> area_attack = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> roar_attack = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
 
-				    private <E extends IAnimatable> PlayState sniffPredicate(AnimationEvent<E> event) {
-				        if (this.isSniffing()) {
-				            event.getController().setAnimation(new AnimationBuilder().addAnimation("roar", true));
-				            return PlayState.CONTINUE;
-				        }
-				        event.getController().markNeedsReload();
-				        return PlayState.STOP;
-				    }
+    private int areaTick = 0;
+    private int roarTick = 0;
 
-				    private <E extends IAnimatable> PlayState swingPredicate(AnimationEvent<E> event) {
-				        if (this.swinging && event.getController().getAnimationState().equals(AnimationState.Stopped)) {
-				            event.getController().markNeedsReload();
-				            event.getController().setAnimation(new AnimationBuilder().addAnimation("bite normal", false));
-				            this.swinging = false;
-				        
-				        return PlayState.CONTINUE;
-				    }
-				        event.getController().markNeedsReload();
-				        return PlayState.STOP;
-				    }
+    public CryodonEntity(EntityType<? extends Animal> p_27557_, Level p_27558_) {
+        super(p_27557_, p_27558_);
+    }
 
-				    @Override
-				    public void registerControllers(AnimationData data) {
-				        data.setResetSpeedInTicks(10);
-				        data.addAnimationController(new AnimationController<>(this, "controller", 10, this::predicate));
-				        data.addAnimationController(new AnimationController<>(this, "sniffController", 0, this::sniffPredicate));
-				        data.addAnimationController(new AnimationController<>(this, "swingController", 0, this::swingPredicate));
-				    }
-					   public static AttributeSupplier.Builder createAttributes() {
-						   return Mob.createMobAttributes()
-						    .add(Attributes.FOLLOW_RANGE, 40.0D)
-							.add(Attributes.MAX_HEALTH, 100.0D)
-							.add(Attributes.MOVEMENT_SPEED, 0.5F)
-							.add(Attributes.ATTACK_DAMAGE, 10.0D);
-				}
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(0, new SleepGoal(this));
+        this.targetSelector.addGoal(0, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Monster.class, true));
+        this.goalSelector.addGoal(1, new RoarGoal(this));
+        this.goalSelector.addGoal(1, new AreaAttackGoal(this,16.0D, 5.0D));
+        this.goalSelector.addGoal(1, new RandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(2, new MeleGoal(this, 15, 1.25D));
+    }
 
-					@Override
-					public AnimationFactory getFactory() 
-					{
-						return this.factory;
-					}
+    private AnimationFactory factory = new AnimationFactory(this);
 
-					@Override
-					protected void registerGoals() {
-				        this.goalSelector.addGoal(2, new CryodonMeleeAttackGoal(this, 1.25D, true));
-						  this.goalSelector.addGoal(1, new RandomStrollGoal(this, 1.0D));
-						  this.goalSelector.addGoal(2, new MeleGoal(this, 15, 1.25D));
-					      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Monster.class, true));
-					      this.targetSelector.addGoal(5, new NearestAttackableTargetGoal<>(this, Player.class, true));
-					      this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9D, 32.0F));
-					      this.targetSelector.addGoal(6, new HurtByTargetGoal(this));
-						  super.registerGoals();
-					}
-				    @Override
-				    protected void defineSynchedData() {
-				        super.defineSynchedData();
-				        this.entityData.define(SNIFFING, false);
-				        this.entityData.define(SITTING, false);
-				    }
+    private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
+        if (this.getSleepState()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("sit", true));
+            return PlayState.CONTINUE;
+        } else if (event.isMoving()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("walk normal", true));
+            return PlayState.CONTINUE;
+        } else if (this.areaAttack()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("hit stun", true));
+            return PlayState.CONTINUE;
+        }
+        else if (this.roarAttack()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("roar", true));
+            return PlayState.CONTINUE;
+        } else {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("idle", true));
+            return PlayState.CONTINUE;
+        }
+    }
 
-				   public Map<String, Vector3f> getModelRotationValues() {
-					   return this.getModelRotationValues();
-				   }
-				   public boolean canBreatheUnderwater() {
-					      return false;
-				   }
-				   protected PathNavigation createNavigation(Level p_27480_) {
-				      return new GroundPathNavigation(this, p_27480_);
-				   }
-			       public float getWalkTargetValue(BlockPos p_149140_, LevelReader p_149141_) {
-					   return 0.0F;
-				   }
-				   public boolean isPushedByFluid() {
-				      return false;
-				   }
-				   public boolean isSniffing() {
-				        return this.entityData.get(SNIFFING);
-				    }
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (this.getSleepState() || this.isImmobile()) {
+            this.jumping = false;
+            this.xxa = 0.0F;
+            this.zza = 0.0F;
+        }
+    }
 
-				    public void setSniffing(boolean sniffing) {
-				        this.entityData.set(SNIFFING, sniffing);
-				    }
-				    public boolean isSitting() {
-				        return this.entityData.get(SITTING);
-				    }
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.getTarget() != null) {
+            if (!this.roarAttack()) {
+                this.roarTick++;
+            }
+            if (this.getHealth() < this.getMaxHealth() / 2) {
+                if (!this.areaAttack()) {
+                    this.areaTick++;
+                }
+            }
+        }
 
-				    public void setSitting(boolean sitting) {
-				        this.entityData.set(SITTING, sitting);
-				    }
-				    static class CryodonMeleeAttackGoal extends MeleeAttackGoal {
+        if (roarTick == 100) {
+            this.setRoarAttack(true);
+            this.roarTick = 0;
+        }
+        if (areaTick == 100) {
+            this.setAreaAttack(true);
+            this.areaTick = 0;
+        }
 
-				        public CryodonMeleeAttackGoal(PathfinderMob pMob, double pSpeedModifier, boolean pFollowingTargetEvenIfNotSeen) {
-				            super(pMob, pSpeedModifier, pFollowingTargetEvenIfNotSeen);
-				        }
-				}
-					protected CryodonEntity(EntityType<? extends Animal> p_27557_, Level p_27558_) {
-						super(p_27557_, p_27558_);
+    }
 
-					}@Override
-					public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
-						return null;
-					}
-				}
-					
-				
+    @Override
+    public void registerControllers(AnimationData data) {
+        data.addAnimationController(new AnimationController<>(this, "controller", 0, this::predicate));
+    }
+
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
+                .add(Attributes.MAX_HEALTH, 100.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.5F)
+                .add(Attributes.ATTACK_DAMAGE, 10.0D);
+    }
+
+    @Override
+    public AnimationFactory getFactory() {
+        return this.factory;
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(sleep_state, false);
+        this.entityData.define(area_attack, false);
+        this.entityData.define(roar_attack, false);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag compoundTag) {
+        super.addAdditionalSaveData(compoundTag);
+        compoundTag.putBoolean("sleep_state", this.getSleepState());
+        compoundTag.putBoolean("area_attack", this.areaAttack());
+        compoundTag.putBoolean("roar_attack", this.roarAttack());
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compoundTag) {
+        super.readAdditionalSaveData(compoundTag);
+        this.setSleep_state(compoundTag.getBoolean("sleep_state"));
+        this.setRoarAttack(compoundTag.getBoolean("roar_attack"));
+        this.setAreaAttack(compoundTag.getBoolean("area_attack"));
+    }
+
+    public boolean canSleep() {
+        var day = this.level.getDayTime();
+        var midnight = day > 18000 && day < 23000;
+        if (this.level.isWaterAt(this.blockPosition())) {
+            return false;
+        } else if (midnight) {
+            return false;
+        } else {
+            return day > 12000 && day < 28000;
+        }
+    }
+
+    public boolean areaAttack() {
+        return this.entityData.get(area_attack);
+    }
+
+    public void setAreaAttack(boolean flag) {
+        this.entityData.set(area_attack, flag);
+    }
+
+    public boolean roarAttack() {
+        return this.entityData.get(roar_attack);
+    }
+
+    public void setRoarAttack(boolean flag) {
+        this.entityData.set(roar_attack, flag);
+    }
+
+    public boolean getSleepState() {
+        return this.entityData.get(sleep_state);
+    }
+
+    public void setSleep_state(boolean flag) {
+        this.entityData.set(sleep_state, flag);
+    }
+
+
+    @Override
+    public AgeableMob getBreedOffspring(ServerLevel p_146743_, AgeableMob p_146744_) {
+        return null;
+    }
+
+
+    public <T extends Entity> List<T> getEntitiesNearby(Class<T> entityClass, double dX, double dY, double dZ, double r) {
+        return this.level.getEntitiesOfClass(entityClass, this.getBoundingBox().inflate(dX, dY, dZ), e -> e != this && distanceTo(e) <= r + e.getBbWidth() / 2F && e.getY() <= getY() + dY);
+    }
+
+    private static class RoarGoal extends Goal {
+        private CryodonEntity entity;
+
+        public RoarGoal(CryodonEntity entity) {
+            this.setFlags(EnumSet.of(Flag.LOOK));
+            this.entity = entity;
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.entity.roarAttack();
+        }
+    }
+
+    private static class AreaAttackGoal extends Goal {
+        private CryodonEntity entity;
+        private double range;
+        private double height;
+
+        public AreaAttackGoal(CryodonEntity entity, double range, double height) {
+            this.entity = entity;
+            this.range = range;
+            this.height = height;
+            this.setFlags(EnumSet.of(Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.entity.areaAttack();
+        }
+
+        @Override
+        public void start() {
+            super.start();
+            this.entity.getTarget();
+        }
+
+        @Override
+        public void stop() {
+            this.entity.setAreaAttack(false);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            if (this.entity.getTarget() != null && this.entity.distanceTo(entity.getTarget()) < 3.0D) {
+                hitEntities();
+            }
+        }
+
+        private void hitEntities() {
+            List<LivingEntity> entitiesHit = this.entity.getEntitiesNearby(LivingEntity.class, range, height, range, range);
+            for (LivingEntity entityHit : entitiesHit) {
+                float entityHitAngle = (float) ((Math.atan2(entityHit.getZ() - entity.getZ(), entityHit.getX() - entity.getX()) * (180 / Math.PI) - 90) % 360);
+                float entityAttackingAngle = entity.yBodyRot % 360;
+                if (entityHitAngle < 0) {
+                    entityHitAngle += 360;
+                }
+                if (entityAttackingAngle < 0) {
+                    entityAttackingAngle += 360;
+                }
+                float entityRelativeAngle = entityHitAngle - entityAttackingAngle;
+                float entityHitDistance = (float) Math.sqrt((entityHit.getZ() - entity.getZ()) * (entityHit.getZ() - entity.getZ()) + (entityHit.getX() - entity.getX()) * (entityHit.getX() - entity.getX())) - entityHit.getBbWidth() / 2f;
+                if (entityHitDistance <= range && (entityRelativeAngle <= 180 / 2 && entityRelativeAngle >= -180 / 2) || (entityRelativeAngle >= 360 - 180 / 2 || entityRelativeAngle <= -360 + 180 / 2)) {
+                    entity.doHurtTarget(entityHit);
+                }
+            }
+        }
+
+    }
+
+    private static class SleepGoal extends Goal {
+        private CryodonEntity entity;
+
+        public SleepGoal(CryodonEntity entity) {
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
+            this.entity = entity;
+        }
+
+        @Override
+        public boolean canUse() {
+            if (entity.xxa == 0.0F && entity.yya == 0.0F && entity.zza == 0.0f) {
+                return entity.canSleep() || entity.getSleepState();
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return entity.canSleep();
+        }
+
+        @Override
+        public void start() {
+            entity.setJumping(false);
+            entity.setSleep_state(true);
+            entity.getNavigation().stop();
+            entity.getMoveControl().setWantedPosition(entity.getX(), entity.getY(), entity.getZ(), 0.00D);
+            System.out.println("Test Sleep");
+        }
+
+        @Override
+        public void stop() {
+            entity.setSleep_state(false);
+        }
+    }
+}

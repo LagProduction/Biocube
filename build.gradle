@@ -93,20 +93,21 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-	maven {
-		url "https://www.cursemaven.com"
-	}
-	maven {
-		url "https://dvs1.progwml6.com/files/maven/"
-	}
-	maven {
-		url "https://modmaven.k-4u.nl"
-	}
+    maven {
+        url "https://www.cursemaven.com"
+    }
+    maven {
+        url "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven {
+        url "https://modmaven.k-4u.nl"
+    }
 }
 
-dependencies {    
-	runtimeOnly fg.deobf("curse.maven:Geckolib-388172:3909986")
+dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.37')
 }
 
 jar {

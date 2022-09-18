@@ -1,31 +1,25 @@
 package com.lagadd.biocubes;
-	  import org.apache.logging.log4j.LogManager;
-	  import org.apache.logging.log4j.Logger;
 
-import com.lagadd.biocubes.common.entites.CryodonEntity;
-import com.lagadd.biocubes.common.entites.GiantSalamanderEntity;
-	  import com.lagadd.biocubes.common.entites.GoblinSharkEntity;
-import com.lagadd.biocubes.common.entites.IgneoglossaEntity;
-import com.lagadd.biocubes.common.entites.LapisRobberEntity;
-import com.lagadd.biocubes.common.entites.SixgillEntity;
+import com.lagadd.biocubes.common.entites.*;
 import com.lagadd.biocubes.core.init.BlockInit;
-	  import com.lagadd.biocubes.core.init.EntityTypesInit;
-	  import com.lagadd.biocubes.core.init.ItemInit;
-	  import com.lagadd.biocubes.core.itemgroup.BiocubeItemGroup;
-
-	  import net.minecraft.world.item.BlockItem;
-	  import net.minecraft.world.item.Item;
-	  import net.minecraftforge.common.MinecraftForge;
-	  import net.minecraftforge.event.RegistryEvent;
-	  import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-	  import net.minecraftforge.eventbus.api.IEventBus;
-	  import net.minecraftforge.eventbus.api.SubscribeEvent;
-	  import net.minecraftforge.fml.common.Mod;
-	  import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-	  import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import com.lagadd.biocubes.core.init.EntityTypesInit;
+import com.lagadd.biocubes.core.init.ItemInit;
+import com.lagadd.biocubes.core.itemgroup.BiocubeItemGroup;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegistryObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import software.bernie.example.GeckoLibMod;
-	  import software.bernie.geckolib3.GeckoLib;
+import software.bernie.geckolib3.GeckoLib;
 
 	  @Mod("biocube")
 	  @Mod.EventBusSubscriber(modid = Biocube.MOD_ID, bus = Bus.MOD)
