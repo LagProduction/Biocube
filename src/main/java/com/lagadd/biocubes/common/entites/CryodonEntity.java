@@ -47,7 +47,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         this.targetSelector.addGoal(0, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Monster.class, true));
         this.goalSelector.addGoal(1, new RoarGoal(this));
-        this.goalSelector.addGoal(1, new AreaAttackGoal(this,16.0D, 5.0D));
+        this.goalSelector.addGoal(1, new AreaAttackGoal(this, 16.0D, 5.0D));
         this.goalSelector.addGoal(1, new RandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(2, new MeleGoal(this, 15, 1.25D));
     }
@@ -64,8 +64,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         } else if (this.areaAttack()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("hit stun", true));
             return PlayState.CONTINUE;
-        }
-        else if (this.roarAttack()) {
+        } else if (this.roarAttack()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("roar", true));
             return PlayState.CONTINUE;
         } else {
