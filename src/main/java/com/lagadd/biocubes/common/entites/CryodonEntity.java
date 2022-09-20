@@ -56,7 +56,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
 
     private <E extends IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         if (this.getSleepState()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sit", true));
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("sit normal", true));
             return PlayState.CONTINUE;
         } else if (event.isMoving()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("walk normal", true));
