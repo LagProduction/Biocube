@@ -158,7 +158,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         } else if (midnight) {
             return false;
         } else {
-            return day > 12000 && day < 28000;
+            return day > 12000 && day < 28000 || this.getTarget() == null;
         }
     }
 
