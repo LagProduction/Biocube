@@ -35,6 +35,8 @@ public class CryodonEntity extends Animal implements IAnimatable {
 
     private int areaTick = 0;
     private int roarTick = 0;
+    private int sleepTick = 0;
+    private int sleep_cooldown = 220; // about 10s
 
     public CryodonEntity(EntityType<? extends Animal> p_27557_, Level p_27558_) {
         super(p_27557_, p_27558_);
@@ -86,26 +88,33 @@ public class CryodonEntity extends Animal implements IAnimatable {
     @Override
     public void tick() {
         super.tick();
-        if (this.getTarget() != null) {
-            if (!this.roarAttack()) {
-                this.roarTick++;
-            }
-            if (this.getHealth() < this.getMaxHealth() / 2) {
+        if (!this.level.isClientSide) {
+            if (this.getTarget() != null) {
+                if (!this.roarAttack()) {
+                    this.roarTick++;
+                    System.out.println("Running Sleep Interval: " + this.roarTick);
+                }
                 if (!this.areaAttack()) {
                     this.areaTick++;
+                    System.out.println("Running Sleep Interval: " + this.areaTick);
                 }
+            } else if (this.getTarget() == null && !this.getSleepState()) {
+                this.sleepTick++;
+                System.out.println("Running Sleep Interval: " + this.sleepTick);
+            }
+            if (this.sleepTick == sleep_cooldown) {
+                this.setSleep_state(true);
+                this.sleepTick = 0;
+            }
+            if (roarTick == 100) {
+                this.setRoarAttack(true);
+                this.roarTick = 0;
+            }
+            if (areaTick == 100) {
+                this.setAreaAttack(true);
+                this.areaTick = 0;
             }
         }
-
-        if (roarTick == 100) {
-            this.setRoarAttack(true);
-            this.roarTick = 0;
-        }
-        if (areaTick == 100) {
-            this.setAreaAttack(true);
-            this.areaTick = 0;
-        }
-
     }
 
     @Override
@@ -151,14 +160,10 @@ public class CryodonEntity extends Animal implements IAnimatable {
     }
 
     public boolean canSleep() {
-        var day = this.level.getDayTime();
-        var midnight = day > 18000 && day < 23000;
         if (this.level.isWaterAt(this.blockPosition())) {
             return false;
-        } else if (midnight) {
-            return false;
         } else {
-            return day > 12000 && day < 28000 || this.getTarget() == null;
+            return this.getTarget() == null && this.getSleepState();
         }
     }
 
@@ -232,6 +237,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         public void start() {
             super.start();
             this.entity.getTarget();
+            System.out.println("Area Attack");
         }
 
         @Override
@@ -242,7 +248,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         @Override
         public void tick() {
             super.tick();
-            if (this.entity.getTarget() != null && this.entity.distanceTo(entity.getTarget()) < 3.0D) {
+            if (this.entity.getTarget() != null && this.entity.distanceTo(entity.getTarget()) < 6.0D) {
                 hitEntities();
             }
         }
@@ -279,7 +285,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
         @Override
         public boolean canUse() {
             if (entity.xxa == 0.0F && entity.yya == 0.0F && entity.zza == 0.0f) {
-                return entity.canSleep() || entity.getSleepState();
+                return entity.canSleep();
             } else {
                 return false;
             }
@@ -302,6 +308,13 @@ public class CryodonEntity extends Animal implements IAnimatable {
         @Override
         public void stop() {
             entity.setSleep_state(false);
+        }
+
+        @Override
+        public void tick() {
+            if (this.entity.getHealth() < this.entity.getMaxHealth()) {
+                this.entity.heal(1.5F);
+            }
         }
     }
 }
