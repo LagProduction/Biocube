@@ -2,6 +2,8 @@ package com.lagadd.biocubes.common.entites;
 
 import com.lagadd.biocubes.common.entites.ai.MeleGoal;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,6 +18,8 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -27,7 +31,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import java.util.EnumSet;
 import java.util.List;
 
-public class CryodonEntity extends Animal implements IAnimatable {
+public class CryodonEntity extends Animal implements IAnimatable, IEntityAdditionalSpawnData {
     //SLEEP STATE
     private static final EntityDataAccessor<Boolean> sleep_state = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> area_attack = SynchedEntityData.defineId(CryodonEntity.class, EntityDataSerializers.BOOLEAN);
@@ -37,6 +41,13 @@ public class CryodonEntity extends Animal implements IAnimatable {
     private int roarTick = 0;
     private int sleepTick = 0;
     private int sleep_cooldown = 220; // about 10s
+
+    private int animation_roar = 1;
+    private int animation_areaattack = 2;
+
+    //Compound NBT variables
+    protected int animation;
+    protected int animationframe;
 
     public CryodonEntity(EntityType<? extends Animal> p_27557_, Level p_27558_) {
         super(p_27557_, p_27558_);
@@ -89,30 +100,30 @@ public class CryodonEntity extends Animal implements IAnimatable {
     public void tick() {
         super.tick();
         if (!this.level.isClientSide) {
+            this.runAnimTick();
+            this.areaTick++;
+            System.out.println("Running Sleep Interval: " + this.areaTick);
             if (this.getTarget() != null) {
-                if (!this.roarAttack()) {
-                    this.roarTick++;
-                    System.out.println("Running Sleep Interval: " + this.roarTick);
+                //MOVE AREA TICK OUT HERE FOR TESTING
+                this.setSleep_state(false);
+            }
+            if (this.getTarget() == null) {
+                if (!this.getSleepState()) {
+                    this.sleepTick++;
+                    System.out.println("Running Sleep Interval: " + this.sleepTick);
                 }
-                if (!this.areaAttack()) {
-                    this.areaTick++;
-                    System.out.println("Running Sleep Interval: " + this.areaTick);
-                }
-            } else if (this.getTarget() == null && !this.getSleepState()) {
-                this.sleepTick++;
-                System.out.println("Running Sleep Interval: " + this.sleepTick);
             }
             if (this.sleepTick == sleep_cooldown) {
                 this.setSleep_state(true);
                 this.sleepTick = 0;
             }
-            if (roarTick == 100) {
-                this.setRoarAttack(true);
-                this.roarTick = 0;
-            }
-            if (areaTick == 100) {
-                this.setAreaAttack(true);
-                this.areaTick = 0;
+            if (!this.hasAnimationRunning()) {
+                if (areaTick == 100) {
+                    this.setAnimation(this.animation_areaattack);
+                    this.setAreaAttack(true);
+                    this.areaTick = 0;
+                    System.out.println("Area Attack Ready");
+                }
             }
         }
     }
@@ -202,6 +213,58 @@ public class CryodonEntity extends Animal implements IAnimatable {
         return this.level.getEntitiesOfClass(entityClass, this.getBoundingBox().inflate(dX, dY, dZ), e -> e != this && distanceTo(e) <= r + e.getBbWidth() / 2F && e.getY() <= getY() + dY);
     }
 
+    @Override
+    public void handleEntityEvent(byte pak) {
+        if (pak <= 0) {
+            this.animation = Math.abs(pak);
+            this.animationframe = 0;
+        } else {
+            super.handleEntityEvent(pak);
+        }
+    }
+
+    @Override
+    public Packet<?> getAddEntityPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+
+    @Override
+    public void writeSpawnData(FriendlyByteBuf buffer) {
+        buffer.writeVarInt(this.animation);
+        buffer.writeVarInt(this.animationframe);
+    }
+
+    @Override
+    public void readSpawnData(FriendlyByteBuf additionalData) {
+        this.animation = additionalData.readVarInt();
+        this.animationframe = additionalData.readVarInt();
+    }
+
+    public boolean hasAnimationRunning() {
+        return this.animation != 0;
+    }
+
+    public int getAnimation() {
+        return this.animation;
+    }
+
+    public int getAnimationframe() {
+        return this.animationframe;
+    }
+
+    public void setAnimation(int id) {
+        this.animation = id;
+        this.animationframe = -1;
+        this.level.broadcastEntityEvent(this, (byte) -id);
+    }
+
+    public void runAnimTick() {
+        if (hasAnimationRunning()) {
+            this.animationframe++;
+        }
+    }
+
     private static class RoarGoal extends Goal {
         private CryodonEntity entity;
 
@@ -230,7 +293,7 @@ public class CryodonEntity extends Animal implements IAnimatable {
 
         @Override
         public boolean canUse() {
-            return this.entity.areaAttack();
+            return this.entity.getAnimation() == this.entity.animation_areaattack;
         }
 
         @Override
