@@ -1,7 +1,7 @@
 package com.lagadd.biocubes.client.render.entity;
 
 	import com.lagadd.biocubes.client.render.model.GiantSalamanderEntityModel;
-import com.lagadd.biocubes.common.entites.GiantSalamanderEntity;
+import com.lagadd.biocubes.common.entities.creatures.GiantSalamanderEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 

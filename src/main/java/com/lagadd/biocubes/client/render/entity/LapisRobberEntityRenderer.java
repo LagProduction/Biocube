@@ -1,7 +1,7 @@
 package com.lagadd.biocubes.client.render.entity;
 
 import com.lagadd.biocubes.client.render.model.LapisRobberEntityModel;
-import com.lagadd.biocubes.common.entites.LapisRobberEntity;
+import com.lagadd.biocubes.common.entities.creatures.LapisRobberEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 

@@ -1,6 +1,7 @@
 package com.lagadd.biocubes;
 
-import com.lagadd.biocubes.common.entites.*;
+import com.lagadd.biocubes.common.entities.creatures.*;
+import com.lagadd.biocubes.common.entities.creatures.cryodon.Cryodon;
 import com.lagadd.biocubes.core.init.BlockInit;
 import com.lagadd.biocubes.core.init.EntityTypesInit;
 import com.lagadd.biocubes.core.init.ItemInit;
@@ -51,8 +52,8 @@ import software.bernie.geckolib3.GeckoLib;
 	          event.put(EntityTypesInit.GiantSalamander.get(), GiantSalamanderEntity.createAttributes().build());
 	          event.put(EntityTypesInit.GoblinShark.get(), GoblinSharkEntity.createAttributes().build());
 	          event.put(EntityTypesInit.Sixgill.get(), SixgillEntity.createAttributes().build());
-	          event.put(EntityTypesInit.Cryodon.get(), CryodonEntity.createAttributes().build());
+	          event.put(EntityTypesInit.Cryodon.get(), Cryodon.createAttributes().build());
 	          event.put(EntityTypesInit.LapisRobber.get(), LapisRobberEntity.createAttributes().build());
-	          event.put(EntityTypesInit.Igneoglossa.get(), IgneoglossaEntity.createAttributes().build()); 
+	          event.put(EntityTypesInit.Igneoglossa.get(), IgneoglossaEntity.createAttributes().build());
 	  	  	}
 	  }

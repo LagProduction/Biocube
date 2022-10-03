@@ -1,7 +1,7 @@
 package com.lagadd.biocubes.client.render.entity;
 
 import com.lagadd.biocubes.client.render.model.IgneoglossaEntityModel;
-import com.lagadd.biocubes.common.entites.IgneoglossaEntity;
+import com.lagadd.biocubes.common.entities.creatures.IgneoglossaEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 

@@ -1,7 +1,7 @@
 package com.lagadd.biocubes.client.render.entity;
 
 import com.lagadd.biocubes.client.render.model.SixgillEntityModel;
-import com.lagadd.biocubes.common.entites.SixgillEntity;
+import com.lagadd.biocubes.common.entities.creatures.SixgillEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
