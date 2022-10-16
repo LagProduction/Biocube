@@ -3,7 +3,7 @@ package com.lagadd.biocubes.common.entities.creatures.cryodon;
 public enum CryodonAttacks {
     STUN("hit stun", 1, 20, 100, 5),
     ROAR("roar", 2, 55, 160, 0),
-    BITE("bite", 3, 22, 45, 13);
+    BITE("bite", 3, 22, 20, 13);
 
     private String name;
     private int id;

@@ -1,7 +1,9 @@
 package com.lagadd.biocubes.core.init;
 
+import com.lagadd.biocubes.Biocube;
 import com.lagadd.biocubes.common.entities.creatures.*;
 import com.lagadd.biocubes.common.entities.creatures.cryodon.Cryodon;
+import com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -24,10 +26,10 @@ public class EntityTypesInit {
                     .sized(3.0f, 1.0f)
                     .build(new ResourceLocation(com.lagadd.biocubes.Biocube.MOD_ID, "goblinshark").toString()));
 
-    public static final RegistryObject<EntityType<SixgillEntity>> Sixgill = ENTITY_TYPES.register("sixgill",
-            () -> EntityType.Builder.<SixgillEntity>of(SixgillEntity::new, MobCategory.MISC)
+    public static final RegistryObject<EntityType<Sixgill>> Sixgill = ENTITY_TYPES.register("sixgill",
+            () -> EntityType.Builder.<Sixgill>of(Sixgill::new, MobCategory.WATER_CREATURE)
                     .sized(3.0f, 1.0f)
-                    .build(new ResourceLocation(com.lagadd.biocubes.Biocube.MOD_ID, "sixgill").toString()));
+                    .build(new ResourceLocation(Biocube.MOD_ID, "sixgill").toString()));
 
     public static final RegistryObject<EntityType<Cryodon>> Cryodon = ENTITY_TYPES.register("cryodon",
             () -> EntityType.Builder.of(Cryodon::new, MobCategory.MISC)

@@ -34,7 +34,7 @@ public class Cryodon extends BiocubeCreature {
     private int bite_tick = 0;
 
     private int sleepTick = 0;
-    private int sleep_cooldown = 220; // about 10s
+    private int sleep_cooldown = 120; // about 6s
 
     public Cryodon(EntityType<? extends Cryodon> entityType, Level level) {
         super(entityType, level);
@@ -84,7 +84,7 @@ public class Cryodon extends BiocubeCreature {
     public void doAnimatedAttack() {
         if (!this.level.isClientSide) {
             var target = this.getTarget();
-            if (target != null) {
+            if (target != null && !this.hasAnimationRunning()) {
                 if (this.stun_tick == 0) {
                     System.out.println("Stun Ready");
                     this.setAnimation(CryodonAttacks.STUN.getId());
@@ -131,7 +131,7 @@ public class Cryodon extends BiocubeCreature {
                 }
             }
             if (this.sleepTick == this.sleep_cooldown) {
-                if (this.isInWater()) {
+                if (!this.isInWater() && this.onGround) {
                     this.setSleeping(true);
                 }
                 System.out.println("Sleeping Ready");
@@ -154,10 +154,19 @@ public class Cryodon extends BiocubeCreature {
             if (this.getAreaStun()) {
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("walk charged ", true));
                 return PlayState.CONTINUE;
+            } else if (this.isSwimming()) {
+                if (this.getAreaStun()) {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("slide charged", true));
+                    return PlayState.CONTINUE;
+                } else {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("idle", true));
+                    return PlayState.CONTINUE;
+                }
             } else {
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("walk normal", true));
                 return PlayState.CONTINUE;
             }
+
         } else if (this.getAnimation() == CryodonAttacks.STUN.getId()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(CryodonAttacks.STUN.getName()));
             return PlayState.CONTINUE;
