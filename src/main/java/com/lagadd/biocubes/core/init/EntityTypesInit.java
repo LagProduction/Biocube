@@ -26,8 +26,8 @@ public class EntityTypesInit {
                     .sized(3.0f, 1.0f)
                     .build(new ResourceLocation(com.lagadd.biocubes.Biocube.MOD_ID, "goblinshark").toString()));
 
-    public static final RegistryObject<EntityType<Sixgill>> Sixgill = ENTITY_TYPES.register("sixgill",
-            () -> EntityType.Builder.<Sixgill>of(Sixgill::new, MobCategory.WATER_CREATURE)
+    public static final RegistryObject<EntityType<com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill>> Sixgill = ENTITY_TYPES.register("sixgill",
+            () -> EntityType.Builder.<com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill>of(Sixgill::new, MobCategory.WATER_CREATURE)
                     .sized(3.0f, 1.0f)
                     .build(new ResourceLocation(Biocube.MOD_ID, "sixgill").toString()));
 

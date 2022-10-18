@@ -86,17 +86,17 @@ public class Cryodon extends BiocubeCreature {
             var target = this.getTarget();
             if (target != null && !this.hasAnimationRunning()) {
                 if (this.stun_tick == 0) {
-                    System.out.println("Stun Ready");
+                    //System.out.println("Stun Ready");
                     this.setAnimation(CryodonAttacks.STUN.getId());
                     this.stun_tick = CryodonAttacks.STUN.getCooldown();
                 }
                 if (this.roar_tick == 0) {
-                    System.out.println("Roar Ready");
+                   // System.out.println("Roar Ready");
                     this.setAnimation(CryodonAttacks.ROAR.getId());
                     this.roar_tick = CryodonAttacks.ROAR.getCooldown();
                 }
                 if (this.bite_tick == 0) {
-                    System.out.println("Bite  Ready");
+                    //System.out.println("Bite  Ready");
                     this.setAnimation(CryodonAttacks.BITE.getId());
                     this.bite_tick = CryodonAttacks.BITE.getCooldown();
                 }
@@ -113,28 +113,28 @@ public class Cryodon extends BiocubeCreature {
         if (this.stun_tick > 0) {
             this.stun_tick--;
             this.setAreaStun(false);
-            System.out.println("Cryodon Stun Cooldown remaining at: " + this.stun_tick);
+           // System.out.println("Cryodon Stun Cooldown remaining at: " + this.stun_tick);
         }
         if (this.roar_tick > 0) {
             this.roar_tick--;
-            System.out.println("Cryodon Roar  Cooldown remaining at: " + this.roar_tick);
+         //   System.out.println("Cryodon Roar  Cooldown remaining at: " + this.roar_tick);
         }
         if (this.bite_tick > 0) {
             this.bite_tick--;
-            System.out.println("Cryodon Bite  Cooldown remaining at: " + this.bite_tick);
+            //System.out.println("Cryodon Bite  Cooldown remaining at: " + this.bite_tick);
         }
         if (!this.level.isClientSide) {
             if (this.getTarget() == null) {
                 if (!this.isSleeping()) {
                     this.sleepTick++;
-                    System.out.println("Sleeping in : " + this.sleepTick);
+              //      System.out.println("Sleeping in : " + this.sleepTick);
                 }
             }
             if (this.sleepTick == this.sleep_cooldown) {
                 if (!this.isInWater() && this.onGround) {
                     this.setSleeping(true);
                 }
-                System.out.println("Sleeping Ready");
+              //  System.out.println("Sleeping Ready");
                 this.sleepTick = 0;
             }
 

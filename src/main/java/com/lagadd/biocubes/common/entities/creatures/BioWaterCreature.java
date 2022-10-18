@@ -39,6 +39,12 @@ public abstract class BioWaterCreature extends BiocubeCreature {
         this.entityData.set(airsupply, var);
     }
 
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(airsupply, this.maxAirSupply());
+    }
+
     protected void handleAirSupply(int p_30344_) {
         if (this.isAlive() && !this.isInWaterOrBubble()) {
             this.setAirSupply(p_30344_ - 1);

@@ -1,7 +1,6 @@
 package com.lagadd.biocubes.client.render.entity;
 
 import com.lagadd.biocubes.client.render.model.SixgillEntityModel;
-import com.lagadd.biocubes.common.entities.creatures.SixgillEntity;
 import com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,8 +21,8 @@ import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
 			@Override
 			public RenderType getRenderType(Sixgill animatable, float partialTicks, PoseStack stack,
-					MultiBufferSource renderTypeBuffer, VertexConsumer vertexBuilder, int packedLightIn,
-					ResourceLocation textureLocation) {
+                                            MultiBufferSource renderTypeBuffer, VertexConsumer vertexBuilder, int packedLightIn,
+                                            ResourceLocation textureLocation) {
 				return RenderType.entityTranslucent(getTextureLocation(animatable));
 				
 				}
