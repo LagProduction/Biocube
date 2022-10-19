@@ -50,27 +50,26 @@ import software.bernie.shadowed.eliotlash.mclib.utils.MathHelper;
 public class Sixgill extends Animal implements IAnimatable {
     private AnimationFactory factory = new AnimationFactory(this);
     private static final EntityDataAccessor<Integer> MOISTNESS_LEVEL = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> MOVING = SynchedEntityData.defineId(Sixgill.class, EntityDataSerializers.BOOLEAN);
     public static final int TOTAL_AIR_SUPPLY = 4800;
 
     public Sixgill(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
-        this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
+        this.moveControl = new SixgillMoveController(this);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
     }
 
     @Override
     protected void registerGoals() {
+        this.targetSelector.addGoal(0, new NearestAttackableTargetGoal<>(this, Monster.class, true));
         this.goalSelector.addGoal(0, new BreathAirGoal(this));
         this.goalSelector.addGoal(0, new TryFindWaterGoal(this));
-        this.goalSelector.addGoal(1, new GoblinSharkSwimGoal(this, 1.35D, 30));
-        this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, 1.0D, 10));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, (double) 1.2F, true));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Monster.class, true));
-        this.goalSelector.addGoal(5, new TemptGoal(this, 1.25D, Ingredient.of(Items.ROTTEN_FLESH), false));
-        this.targetSelector.addGoal(6, new HurtByTargetGoal(this));
-        this.goalSelector.addGoal(4, new SixgillGrabGoal(this, 2.5F, true));
+        this.goalSelector.addGoal(1, new SixgillThrashGoal(this));
+        this.goalSelector.addGoal(2, new SixgillGrabGoal(this, 2.5F, true));
+        this.goalSelector.addGoal(3, new SixgillRandomSwimmingGoal(this, 1.1D, 15));
+        this.goalSelector.addGoal(4, new TemptGoal(this, 1.25D, Ingredient.of(Items.ROTTEN_FLESH), false));
+        this.targetSelector.addGoal(5, new HurtByTargetGoal(this));
         super.registerGoals();
     }
 
@@ -131,6 +130,11 @@ public class Sixgill extends Animal implements IAnimatable {
         return new WaterBoundPathNavigation(this, p_27480_);
     }
 
+    @Override
+    public boolean rideableUnderWater() {
+        return true;
+    }
+
     public int getMaxAirSupply() {
         return 4800;
     }
@@ -150,15 +154,20 @@ public class Sixgill extends Animal implements IAnimatable {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(MOISTNESS_LEVEL, 2400);
+        this.entityData.define(MOVING, false);
     }
 
+    @Override
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putInt("Moistness", this.getMoistnessLevel());
+        compound.putBoolean("IsMoving", this.isMoving());
     }
 
+    @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         this.setMoisntessLevel(compound.getInt("Moistness"));
+        this.setMoving(compound.getBoolean("IsMoving"));
     }
 
     protected SoundEvent getDeathSound() {
@@ -200,6 +209,14 @@ public class Sixgill extends Animal implements IAnimatable {
         }
     }
 
+    public boolean isMoving() {
+        return this.entityData.get(MOVING);
+    }
+
+    public void setMoving(boolean moving) {
+        this.entityData.set(MOVING, moving);
+    }
+
 
     @Override
     public void travel(Vec3 p_213352_1_) {
@@ -207,7 +224,7 @@ public class Sixgill extends Animal implements IAnimatable {
             this.moveRelative(0.01F, p_213352_1_);
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9D));
-            if (this.getTarget() == null) {
+            if (!this.isMoving() && this.getTarget() == null) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.005D, 0.0D));
             }
         } else {
