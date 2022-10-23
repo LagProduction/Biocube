@@ -14,15 +14,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
-import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -31,10 +27,10 @@ import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
@@ -65,7 +61,7 @@ public class Sixgill extends Animal implements IAnimatable {
         this.targetSelector.addGoal(0, new NearestAttackableTargetGoal<>(this, Monster.class, true));
         this.goalSelector.addGoal(0, new BreathAirGoal(this));
         this.goalSelector.addGoal(0, new TryFindWaterGoal(this));
-        this.goalSelector.addGoal(1, new SixgillThrashGoal(this));
+        this.goalSelector.addGoal(1, new SixgillCrushBiteGoal(this));
         this.goalSelector.addGoal(2, new SixgillGrabGoal(this, 2.5F, true));
         this.goalSelector.addGoal(3, new SixgillRandomSwimmingGoal(this, 1.1D, 15));
         this.goalSelector.addGoal(4, new TemptGoal(this, 1.25D, Ingredient.of(Items.ROTTEN_FLESH), false));
@@ -89,10 +85,63 @@ public class Sixgill extends Animal implements IAnimatable {
     private <E extends IAnimatable> PlayState predicate1(AnimationEvent<E> event) {
 
         if (this.isAggressive()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("bite", true));
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("bite"));
             return PlayState.CONTINUE;
         }
         return null;
+    }
+
+    @Override
+    public boolean shouldRiderSit() {
+        return false;
+    }
+
+    @Override
+    public boolean canRiderInteract() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldRiderFaceForward(Player player) {
+        return true;
+    }
+
+    public float getMountDistance() {
+        return 1.2F;
+    }
+
+    @Override
+    public double getPassengersRidingOffset() {
+        return 0.5F;
+    }
+
+    @Override
+    protected void addPassenger(Entity p_20349_) {
+        super.addPassenger(p_20349_);
+    }
+
+    @Override
+    protected void removePassenger(Entity p_20352_) {
+        super.removePassenger(p_20352_);
+    }
+
+    @Override
+    public void positionRider(Entity passenger) {
+        if (passenger instanceof LivingEntity) {
+            float distance = this.getMountDistance();
+
+            double dx = Math.cos((this.getYRot() + 90) * Math.PI / 180.0D) * distance;
+            double dy = -Math.sin(this.getXRot() * (Math.PI / 180.0D));
+            double dz = Math.sin((this.getYRot() + 90) * Math.PI / 180.0D) * distance;
+
+            Vec3 riderPos = new Vec3(this.getX() + dx, this.getY(), this.getZ() + dz);
+
+            double offset = passenger instanceof Player ? this.getPassengersRidingOffset() - 0.2D : this.getPassengersRidingOffset() - 0.5F;
+
+            passenger.setPos(riderPos.x, this.getY() + dy + offset, riderPos.z);
+        } else {
+            super.positionRider(passenger);
+        }
     }
 
     @Override
@@ -189,6 +238,11 @@ public class Sixgill extends Animal implements IAnimatable {
 
     public void tick() {
         super.tick();
+        if (this.getTarget() != null && !this.getTarget().isAlive()) {
+            this.setTarget(null);
+        }
+
+
         if (this.isNoAi()) {
             this.setAirSupply(this.getMaxAirSupply());
         } else {
@@ -229,68 +283,6 @@ public class Sixgill extends Animal implements IAnimatable {
             }
         } else {
             super.travel(p_213352_1_);
-        }
-    }
-
-    static class MoveHelperController extends MoveControl {
-        private final Sixgill sixgill;
-
-        MoveHelperController(Sixgill sixgill) {
-            super(sixgill);
-            this.sixgill = sixgill;
-        }
-
-        public void tick() {
-            if (this.sixgill.isEyeInFluid(FluidTags.WATER)) {
-                this.sixgill.setDeltaMovement(this.sixgill.getDeltaMovement().add(0.0D, 0.005D, 0.0D));
-            }
-
-            if (this.operation == MoveControl.Operation.MOVE_TO && !this.sixgill.getNavigation().isDone()) {
-                double d0 = this.wantedX - this.sixgill.getX();
-                double d1 = this.wantedY - this.sixgill.getY();
-                double d2 = this.wantedZ - this.sixgill.getZ();
-                double d3 = MathHelper.wrapDegrees(d0 * d0 + d1 * d1 + d2 * d2);
-                d1 = d1 / d3;
-                float f = (float) (MathHelper.wrapDegrees(d2) * (double) (180F / (float) Math.PI)) - 90.0F;
-                this.sixgill.yBodyRot = this.rotlerp(this.sixgill.yBodyRot, f, 90.0F);
-                this.sixgill.yBodyRot = this.sixgill.yBodyRot;
-                this.sixgill.setSpeed(MathHelper.wrapDegrees(0.125F));
-                this.sixgill.setDeltaMovement(this.sixgill.getDeltaMovement().add(0.0D, (double) this.sixgill.getSpeed() * d1 * 0.03D, 0.0D));
-            }
-        }
-    }
-
-    class GoblinSharkSwimGoal extends RandomSwimmingGoal {
-        public GoblinSharkSwimGoal(Sixgill sixgillEntity, double d, int i) {
-            super(sixgillEntity, 1.0D, 40);
-        }
-
-        @Override
-        public boolean canUse() {
-            if (this.mob.isVehicle()) {
-                return false;
-            } else {
-                if (!this.forceTrigger) {
-                    if (this.mob.getNoActionTime() >= 100) {
-                        return false;
-                    } else {
-                        if (this.mob.getRandom().nextInt(30) != 0) {
-                            return false;
-                        }
-                    }
-                }
-
-                Vec3 vec3d = this.getPosition();
-                if (vec3d == null) {
-                    return false;
-                } else {
-                    this.wantedX = vec3d.x;
-                    this.wantedY = vec3d.y;
-                    this.wantedZ = vec3d.z;
-                    this.forceTrigger = false;
-                    return true;
-                }
-            }
         }
     }
 

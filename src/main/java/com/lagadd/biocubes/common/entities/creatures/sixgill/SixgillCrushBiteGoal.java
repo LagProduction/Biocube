@@ -10,12 +10,12 @@ import net.minecraft.world.item.Items;
 
 import java.util.EnumSet;
 
-public class SixgillThrashGoal extends Goal {
+public class SixgillCrushBiteGoal extends Goal {
     public Sixgill Sixgill;
     private float originalYaw;
     private float thrashedTicks;
 
-    public SixgillThrashGoal(Sixgill Sixgill) {
+    public SixgillCrushBiteGoal(Sixgill Sixgill) {
         this.Sixgill = Sixgill;
         this.setFlags(EnumSet.of(Goal.Flag.LOOK));
     }
@@ -69,7 +69,6 @@ public class SixgillThrashGoal extends Goal {
         if (entity instanceof Player) {
             this.disablePlayersShield((Player) entity);
         }
-
         entity.setShiftKeyDown(false);
 
         if (this.thrashedTicks % 5 == 0 && this.thrashedTicks > 0) {
