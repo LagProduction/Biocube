@@ -43,6 +43,8 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.shadowed.eliotlash.mclib.utils.MathHelper;
 
+import javax.annotation.Nullable;
+
 public class Sixgill extends Animal implements IAnimatable {
     private AnimationFactory factory = new AnimationFactory(this);
     private static final EntityDataAccessor<Integer> MOISTNESS_LEVEL = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.INT);
@@ -96,10 +98,6 @@ public class Sixgill extends Animal implements IAnimatable {
         return false;
     }
 
-    @Override
-    public boolean canRiderInteract() {
-        return true;
-    }
 
     @Override
     public boolean shouldRiderFaceForward(Player player) {
