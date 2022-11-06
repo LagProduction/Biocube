@@ -2,6 +2,7 @@ package com.lagadd.biocubes.common.entities.creatures.sixgill;
 
 import java.util.Map;
 
+import com.lagadd.biocubes.common.entities.creatures.AquaticMoveController;
 import com.mojang.math.Vector3f;
 
 import net.minecraft.core.BlockPos;
@@ -53,7 +54,7 @@ public class Sixgill extends Animal implements IAnimatable {
 
     public Sixgill(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
-        this.moveControl = new SixgillMoveController(this);
+        this.moveControl = new AquaticMoveController(this, 1.0F, 15F);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
     }
