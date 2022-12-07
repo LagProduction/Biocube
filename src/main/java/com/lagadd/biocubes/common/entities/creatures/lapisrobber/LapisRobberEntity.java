@@ -1,8 +1,10 @@
-package com.lagadd.biocubes.common.entities.creatures;
+package com.lagadd.biocubes.common.entities.creatures.lapisrobber;
 
 import java.util.Map;
 
 
+import com.lagadd.biocubes.common.entities.creatures.sixgill.SixgillCrushBiteGoal;
+import com.lagadd.biocubes.common.entities.creatures.sixgill.SixgillGrabGoal;
 import com.mojang.math.Vector3f;
 
 import net.minecraft.core.BlockPos;
@@ -11,15 +13,12 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -148,6 +147,8 @@ public class LapisRobberEntity extends Animal implements IAnimatable {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Monster.class, true));
         this.targetSelector.addGoal(7, new NearestAttackableTargetGoal<>(this, Player.class, true));
         this.targetSelector.addGoal(7, new NearestAttackableTargetGoal<>(this, Sheep.class, true));
+        this.goalSelector.addGoal(1, new LapisRobberDragGoal(this));
+        this.goalSelector.addGoal(2, new LapisRobberGrabGoal(this, 2.5F, true));
         super.registerGoals();
     }
 
@@ -183,29 +184,8 @@ public class LapisRobberEntity extends Animal implements IAnimatable {
     public void tick() {
         super.tick();
         if (this.getTarget() != null && this.hasLineOfSight(this.getTarget())) {
-            this.grabbing_tick++;
             if (this.distanceTo(this.getTarget()) > 3.0F) {
                 this.navigation.moveTo(this.getTarget(), 1.0D);
-            } else if (this.grabbing_tick == this.grabbing_cooldown && this.distanceTo(this.getTarget()) < 3.0F) {
-                this.navigation.stop();
-                this.setGrabbing(true);
-                this.getTarget().startRiding(this, true);
-            }
-        }
-
-        if (this.isGrabbing() && this.getTarget() != null) {
-            this.grab_duration++;
-            Vec3 vec3 = new Vec3(this.getX(), this.getY(), this.getZ());
-
-            if (this.grab_duration > 0 && this.grab_duration <= this.grabbing_max_duration) {
-                this.getTarget().hurt(DamageSource.mobAttack(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
-                this.setDeltaMovement(vec3.x, vec3.y * 0.05D, vec3.z);
-            }
-            if (this.grab_duration >= this.grabbing_max_duration) {
-                this.removePassenger(this.getTarget());
-                this.setGrabbing(false);
-                this.grab_duration = 0;
-                this.grabbing_tick = 0;
             }
         }
 

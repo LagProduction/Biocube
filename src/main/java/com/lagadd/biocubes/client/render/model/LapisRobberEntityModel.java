@@ -1,7 +1,7 @@
 package com.lagadd.biocubes.client.render.model;
 
 	import com.lagadd.biocubes.Biocube;
-import com.lagadd.biocubes.common.entities.creatures.LapisRobberEntity;
+import com.lagadd.biocubes.common.entities.creatures.lapisrobber.LapisRobberEntity;
 
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib3.model.AnimatedGeoModel;

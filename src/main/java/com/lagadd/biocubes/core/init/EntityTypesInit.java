@@ -3,6 +3,7 @@ package com.lagadd.biocubes.core.init;
 import com.lagadd.biocubes.Biocube;
 import com.lagadd.biocubes.common.entities.creatures.*;
 import com.lagadd.biocubes.common.entities.creatures.cryodon.Cryodon;
+import com.lagadd.biocubes.common.entities.creatures.lapisrobber.LapisRobberEntity;
 import com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;

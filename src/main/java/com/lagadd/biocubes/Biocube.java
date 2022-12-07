@@ -2,6 +2,7 @@ package com.lagadd.biocubes;
 
 import com.lagadd.biocubes.common.entities.creatures.*;
 import com.lagadd.biocubes.common.entities.creatures.cryodon.Cryodon;
+import com.lagadd.biocubes.common.entities.creatures.lapisrobber.LapisRobberEntity;
 import com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill;
 import com.lagadd.biocubes.core.init.BlockInit;
 import com.lagadd.biocubes.core.init.EntityTypesInit;
