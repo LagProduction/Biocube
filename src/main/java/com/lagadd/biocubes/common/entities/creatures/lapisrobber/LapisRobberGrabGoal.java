@@ -29,6 +29,11 @@ public class LapisRobberGrabGoal extends MeleeAttackGoal {
     }
 
     @Override
+    public void start() {
+        this.lapis.setGrabbing(true);
+    }
+
+    @Override
     public boolean canContinueToUse() {
         LivingEntity attackTarget = this.lapis.getTarget();
         if (attackTarget != null && attackTarget.isPassenger()) {

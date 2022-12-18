@@ -77,7 +77,7 @@ public class LapisRobberDragGoal extends Goal {
             entity.setShiftKeyDown(false);
 
             if (this.biteTicks % 5 == 0 && this.biteTicks > 0) {
-                entity.hurt(DamageSource.mobAttack(this.lapis), (float) this.lapis.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+                //   entity.hurt(DamageSource.mobAttack(this.lapis), (float) this.lapis.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
             }
         }
     }
