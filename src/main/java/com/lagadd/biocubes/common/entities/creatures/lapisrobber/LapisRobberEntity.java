@@ -62,7 +62,7 @@ public class LapisRobberEntity extends Animal implements IAnimatable {
         } else if (this.isHiding()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("fly_dig"));
             return PlayState.CONTINUE;
-        } else if (this.isGrabbing()) {
+        } else if (this.isGrabbing() && this.grabbing_tick < 10) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("grab"));
             return PlayState.CONTINUE;
         }
@@ -187,8 +187,11 @@ public class LapisRobberEntity extends Animal implements IAnimatable {
             if (this.distanceTo(this.getTarget()) > 3.0F) {
                 this.navigation.moveTo(this.getTarget(), 1.0D);
             }
+            this.grabbing_tick++;
         }
-
+        if (this.getTarget() == null) {
+            this.grabbing_tick = 0;
+        }
 
         if (this.shouldHideUnderneath()) {
             this.setHiding(true);
