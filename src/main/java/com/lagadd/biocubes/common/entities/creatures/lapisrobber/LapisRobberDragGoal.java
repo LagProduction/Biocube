@@ -1,6 +1,7 @@
 package com.lagadd.biocubes.common.entities.creatures.lapisrobber;
 
 import com.lagadd.biocubes.common.entities.creatures.sixgill.Sixgill;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 
@@ -60,11 +62,11 @@ public class LapisRobberDragGoal extends Goal {
         this.biteTicks++;
 
         this.lapis.getNavigation().stop();
+        if (!this.lapis.getPassengers().isEmpty() && this.biteTicks > 0) {
+            Vec3 flightDest = new Vec3(this.lapis.getX(), this.lapis.getY() + 0.5D, this.lapis.getZ());
+            this.lapis.getNavigation().moveTo(flightDest.x, flightDest.y, flightDest.z, 0.8D);
 
-        this.lapis.yRotO = this.lapis.getYRot();
-
-        this.lapis.yBodyRot = (this.originalYaw) + 75 * Mth.cos(this.lapis.tickCount * 0.5F) * 1F;
-        this.lapis.setYRot((this.originalYaw) + 75 * Mth.cos(this.lapis.tickCount * 0.5F) * 1F);
+        }
 
         Entity entity = this.lapis.getFirstPassenger();
         if (entity != null) {
@@ -77,7 +79,7 @@ public class LapisRobberDragGoal extends Goal {
             entity.setShiftKeyDown(false);
 
             if (this.biteTicks % 5 == 0 && this.biteTicks > 0) {
-                entity.hurt(DamageSource.mobAttack(this.lapis), (float) this.lapis.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+                entity.hurt(DamageSource.mobAttack(this.lapis), 2F);
             }
         }
     }
